@@ -1,13 +1,13 @@
 import os
 from pathlib import Path
+
 import numpy as np
 from qualang_tools.config.waveform_tools import (
+    drag_cosine_pulse_waveforms,
     drag_gaussian_pulse_waveforms,
     flattop_gaussian_waveform,
-    drag_cosine_pulse_waveforms,
 )
 from qualang_tools.units import unit
-
 
 ######################
 # Network parameters #
@@ -17,6 +17,9 @@ QOP_VER = "v3_6_0"
 HOST = "qm-saas.quantum-machines.co"
 EMAIL = "YOUR_EMAIL"
 PWD = "YOUR_PASSWORD"
+
+QOP_IP = "192.168.88.254"
+CLUSTER_NAME = "YaqumoQM"
 
 
 #######################
@@ -29,10 +32,28 @@ u = unit(coerce_to_integer=True)
 # OPX configuration #
 #####################
 con = "con1"
-lf_fem = 1
-mw_fem = 2
-# Set octave_config to None if no octave are present
-octave_config = None
+lf_fem1 = 1
+lf_fem2 = 2
+lf_fem3 = 3
+mw_fem1 = 4
+
+
+#############
+# Save Path #
+#############
+
+# Path to save data
+
+save_dir_atoms = Path("/workspaces/atoms/data")
+save_dir_atoms.mkdir(exist_ok=True)
+default_additional_files_atoms = {
+    "atoms/configuration_opx1000_mwfem_lffem.py": "configuration_opx1000_mwfem_lffem.py",
+}
+save_dir_sc = Path("/workspaces/superconducting/data")
+save_dir_sc.mkdir(exist_ok=True)
+default_additional_files_sc = {
+    "superconducting/configuration_opx1000_mwfem_lffem.py": "configuration_opx1000_mwfem_lffem.py",
+}
 
 
 ##################
@@ -120,14 +141,17 @@ col_channel = 1
 # Analog output connected to the row AOD
 row_channel = 2
 
+# Qubit LO
+qubit_LO = 6 * u.GHz
+# Qubit power
+qubit_power = 1 # dBm
 
 config = {
-    "version": 1,
     "controllers": {
         con: {
             "type": "opx1000",
             "fems": {
-                lf_fem: {
+                lf_fem1: {
                     "type": "LF",
                     "analog_outputs": {
                         # 1: {
@@ -153,7 +177,6 @@ config = {
                         # },
                         col_channel: {"offset": col_selector_voltage_offset},  # Col AOD tone
                         row_channel: {"offset": row_selector_voltage_offset},  # Row AOD tone
-                        7: {"offset": 0.0},  # Fake port for measurement
                         8: {"offset": 0.0},  # Fake port for measurement
                     },
                     "digital_outputs": {
@@ -164,6 +187,58 @@ config = {
                         # 2: {"offset": 0.0},  # Not used yet
                     },
                 },
+                lf_fem2: {
+                    "type": "LF",
+                    "analog_outputs": {
+                        1: {"offset": 0.0},
+                    },
+                    "digital_outputs": {
+                        1: {},
+                    },
+                    "analog_inputs": {
+                        1: {"offset": 0.0},  # Analog input 1 used for fpga readout
+                    },
+                },
+                lf_fem3: {
+                    "type": "LF",
+                    "analog_outputs": {
+                        1: {"offset": 0.0},
+                    },
+                    "digital_outputs": {
+                        1: {},
+                    },
+                    "analog_inputs": {
+                        1: {"offset": 0.0},  # Analog input 1 used for fpga readout
+                    },
+                },
+                mw_fem1: {
+                    # The keyword "band" refers to the following frequency bands:
+                    #   1: (50 MHz - 5.5 GHz)
+                    #   2: (4.5 GHz - 7.5 GHz)
+                    #   3: (6.5 GHz - 10.5 GHz)
+                    # Note that the "coupled" ports O1 & I1, O2 & O3, O4 & O5, O6 & O7, and O8 & I2
+                    # must be in the same band.
+                    # MW-FEM outputs are delayed with respect to the LF-FEM outputs by 141ns for bands 1 and 3 and 161ns for band 2.
+                    # The keyword "full_scale_power_dbm" is the maximum power of
+                    # normalized pulse waveforms in [-1,1]. To convert to voltage,
+                    #   power_mw = 10**(full_scale_power_dbm / 10)
+                    #   max_voltage_amp = np.sqrt(2 * power_mw * 50 / 1000)
+                    #   amp_in_volts = waveform * max_voltage_amp
+                    #   ^ equivalent to OPX+ amp
+                    # Its range is -11dBm to +16dBm with 3dBm steps.
+                    "type": "MW",
+                    "analog_outputs": {
+                        1: {
+                            "band": 2,
+                            "full_scale_power_dbm": qubit_power,
+                            "upconverters": {1: {"frequency": qubit_LO}},
+                        },  # qubit
+                    },
+                    "digital_outputs": {},
+                    "analog_inputs": {
+                        1: {"band": 2, "downconverter_frequency": qubit_LO},  # for down-conversion
+                    },
+                },
             },
         },
     },
@@ -171,16 +246,15 @@ config = {
         # detector is used to acquire the spectrographs for debuging
         "detector": {
             "singleInput": {
-                "port": (con, lf_fem, 8),
+                "port": (con, lf_fem1, 8),
             },
             "intermediate_frequency": 0,
             "operations": {
                 "const": "const_pulse",
                 "readout": "readout_pulse",
-                "short_readout": "short_readout_pulse",
             },
             "outputs": {
-                "out1": (con, lf_fem, 1),
+                "out1": (con, lf_fem1, 1),
             },
             "time_of_flight": 24 + 176, # with ext. trigger: 24 + 176 ns
             "smearing": 0,
@@ -189,7 +263,7 @@ config = {
         **{
             f"row_selector_{i + 1:02d}": {
                 "singleInput": {
-                    "port": (con, lf_fem, row_channel),
+                    "port": (con, lf_fem1, 2),
                 },
                 "intermediate_frequency": row_IFs[i],
                 "operations": {
@@ -204,7 +278,7 @@ config = {
         **{
             f"col_selector_{i + 1:02d}": {
                 "singleInput": {
-                    "port": (con, lf_fem, col_channel),
+                    "port": (con, lf_fem1, 1),
                 },
                 "intermediate_frequency": col_IFs[i],
                 "operations": {
@@ -218,7 +292,7 @@ config = {
         "trigger_artiq": {
             "digitalInputs": {
                 "marker": {
-                    "port": (con, lf_fem, 1),
+                    "port": (con, lf_fem1, 1),
                     "delay": 0,
                     "buffer": 0,
                 },
@@ -239,18 +313,6 @@ config = {
                 "cos": "cosine_weights",
                 "sin": "sine_weights",
                 "const": "const_weights",
-            },
-            "digital_marker": "ON",
-        },
-        "short_readout_pulse": {
-            "operation": "measurement",
-            "length": short_readout_pulse_len,
-            "waveforms": {
-                "single": "zero_wf",
-            },
-            "integration_weights": {
-                "cos": "cosine_weights",
-                "sin": "sine_weights",
             },
             "digital_marker": "ON",
         },
@@ -278,22 +340,6 @@ config = {
             },
             "digital_marker": "ON",
         },
-        "unit_pulse": {
-            "operation": "control",
-            "length": occupation_matrix_pulse_len,
-            "waveforms": {
-                "single": "unit_wf",
-            },
-            "digital_marker": "ON",
-        },
-        "zero_pulse": {
-            "operation": "control",
-            "length": occupation_matrix_pulse_len,
-            "waveforms": {
-                "single": "zero_wf",
-            },
-            "digital_marker": "ON",
-        },
         "artiq_trigger_ON": {
             "operation": "control",
             "length": artiq_trigger_len,
@@ -314,10 +360,6 @@ config = {
         "const_wf": {
             "type": "constant",
             "sample": const_pulse_amp,
-        },
-        "unit_wf": {
-            "type": "constant",
-            "sample": occupation_matrix_pulse_amp,
         },
         "zero_wf": {
             "type": "constant",

@@ -1,12 +1,9 @@
 # %%
-from qm import QuantumMachinesManager
-from qm.qua import *
-from qm import SimulationConfig, LoopbackInterface
-# from configuration_opxplus_octave import *
-from configuration_opx1000_lffem import *
 import matplotlib.pyplot as plt
-from qm_saas import QOPVersion, QmSaas
-
+from configuration_opx1000_mwfem_lffem import *
+from qm import LoopbackInterface, QuantumMachinesManager, SimulationConfig
+from qm.qua import *
+from qm_saas import QmSaas, QOPVersion
 
 # Initialize QOP simulator client
 client = QmSaas(email=EMAIL, password=PWD, host=HOST)
@@ -25,6 +22,34 @@ with client.simulator(QOPVersion(QOP_VER)) as instance:
 
     with program() as PROG:
         
+        # # case1
+        # play("const", "col_selector_01") # 100MHz, 1us
+
+        # # case2
+        # play("const", "col_selector_01", chirp=(100, "GHz/sec")) # 100MHz -> 120MHz
+
+        # # case3
+        # update_frequency("col_selector_01", 80 * u.MHz)
+        # play("const", "col_selector_01") # 80MHz, 1us
+
+        # # case4
+        # update_frequency("col_selector_01", 80 * u.MHz)
+        # play("const", "col_selector_01", chirp=(100, "GHz/sec")) # 80MHz -> 100MHz
+
+        # # case5
+        # # f01 = 75MHz # QUA variable on FPGA
+        # update_frequency("col_selector_01", f01)
+        # play("const", "col_selector_01", chirp=(100, "GHz/sec")) # f01 MHz -> (f01 + 20)MHz
+
+        # # case6
+        # # f01 = 75MHz # QUA variable on FPGA
+        # # t01 = 500 ns # QUA variable on FPGA
+        # update_frequency("col_selector_01", f01)
+        # play("const", "col_selector_01", chirp=(100, "GHz/sec"), duration=t01 * u.ns) # f01 MHz -> (f01 + 10)MHz
+        # play("const" * amp(1.0), "col_selector_01", chirp=(50, "GHz/sec")) # f01 MHz -> (f01 + 10)MHz
+        # play("const" * amp(0.9), "col_selector_01", chirp=(60, "GHz/sec")) # f01 MHz -> (f01 + 10)MHz
+        # play("const" * amp(1.0), "col_selector_01", chirp=([100, 105, 110], "GHz/sec"), duration=t01 * u.ns) # f01 MHz -> (f01 + 10)MHz
+
         with infinite_loop_():
             for i in range(n_tweezers):
                 r = (i + 1) / n_tweezers
