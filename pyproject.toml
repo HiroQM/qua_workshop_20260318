@@ -1,0 +1,33 @@
+[project]
+name = "run-qua"
+version = "0.1.0"
+description = "QUA / OPX experiment scripts"
+readme = "README.md"
+requires-python = ">=3.9,<3.13"
+dependencies = [
+    "qm-qua==1.2.6",
+    "qualang-tools==0.21.1",
+    "qm-saas==1.1.7",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.0.0",
+    "isort>=5.13.0",
+]
+
+[tool.uv]
+package = false
+prerelease = "allow"
+
+[tool.uv.pip]
+prerelease = "allow"
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+skip_gitignore = true
