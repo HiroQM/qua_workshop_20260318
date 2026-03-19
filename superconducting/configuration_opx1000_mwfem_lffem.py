@@ -182,12 +182,11 @@ ge_threshold = 0.0
 #                  Config                   #
 #############################################
 config = {
-    "version": 1,
     "controllers": {
-        con: {
+        "con1": {
             "type": "opx1000",
             "fems": {
-                mw_fem: {
+                4: {
                     # The keyword "band" refers to the following frequency bands:
                     #   1: (50 MHz - 5.5 GHz)
                     #   2: (4.5 GHz - 7.5 GHz)
@@ -206,8 +205,8 @@ config = {
                     "analog_outputs": {
                         1: {
                             "band": 2,
-                            "full_scale_power_dbm": resonator_power,
                             "upconverters": {1: {"frequency": resonator_LO}},
+                            "full_scale_power_dbm": resonator_power,
                         },  # resonator
                         2: {
                             "band": 2,
@@ -220,7 +219,7 @@ config = {
                         1: {"band": 2, "downconverter_frequency": resonator_LO},  # for down-conversion
                     },
                 },
-                lf_fem: {
+                1: {
                     "type": "LF",
                     "analog_outputs": {
                         # Flux line
@@ -245,9 +244,52 @@ config = {
                             # 141ns delay (band 1 and 3) or 161ns delay (band 2)
                             "delay": 141 * u.ns,
                         },
+                        2: {
+                            "output_mode": "direct",
+                            "sampling_rate": sampling_rate,
+                            "upsampling_mode": "mw",
+                        },
                     },
                     "digital_outputs": {
                         1: {},
+                    },
+                    "analog_inputs": {
+                    },
+                },
+                2: {
+                    "type": "LF",
+                    "analog_outputs": {
+                        # Flux line
+                        1: {
+                            "offset": max_frequency_point,
+                            "output_mode": "amplified",
+                            "sampling_rate": sampling_rate,
+                            "upsampling_mode": "pulse",
+                            "delay": 141 * u.ns,
+                        },
+                    },
+                    "digital_outputs": {
+                        1: {},
+                    },
+                    "analog_inputs": {
+                    },
+                },
+                3: {
+                    "type": "LF",
+                    "analog_outputs": {
+                        # Flux line
+                        1: {
+                            "offset": max_frequency_point,
+                            "output_mode": "amplified",
+                            "sampling_rate": sampling_rate,
+                            "upsampling_mode": "pulse",
+                            "delay": 141 * u.ns,
+                        },
+                    },
+                    "digital_outputs": {
+                        1: {},
+                    },
+                    "analog_inputs": {
                     },
                 },
             },
@@ -291,6 +333,7 @@ config = {
             },
             "time_of_flight": time_of_flight,
             "smearing": 0,
+            "core": "abc",
         },
         "flux_line": {
             "singleInput": {

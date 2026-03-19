@@ -21,10 +21,8 @@ with client.simulator(QOPVersion(QOP_VER)) as instance:
     )
 
     n_avg = 100
-    m_avg = 100
 
     with program() as prog:
-        m = declare(int)  # QUA variable for the averaging loop
         n = declare(int)  # QUA variable for the averaging loop
         adc_st = declare_stream(adc_trace=True)  # The stream to store the raw ADC trace
         

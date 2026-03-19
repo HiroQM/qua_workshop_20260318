@@ -55,6 +55,8 @@ with client.simulator(QOPVersion(QOP_VER)) as instance:
                 with for_each_(a, amplitudes):  # QUA for_ loop for sweeping the readout amplitude
                     # Measure the resonator (send a readout pulse whose amplitude is rescaled by the pre-factor 'a' [-2, 2)
                     # and demodulate the signals to get the 'I' & 'Q' quadratures)
+                    play("cw", "qubit")
+                    align("qubit", "resonator")
                     measure(
                         "readout" * amp(a),
                         "resonator",

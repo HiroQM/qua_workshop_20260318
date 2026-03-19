@@ -43,8 +43,9 @@ with client.simulator(QOPVersion(QOP_VER)) as instance:
         I_st = declare_stream()  # Stream for the 'I' quadrature
         Q_st = declare_stream()  # Stream for the 'Q' quadrature
         n_st = declare_stream()  # Stream for the averaging iteration 'n'
-
+        
         with for_(n, 0, n < n_avg, n + 1):  # QUA for_ loop for averaging
+            
             with for_(*from_array(f, frequencies)):  # QUA for_ loop for sweeping the frequency
                 # Update the frequency of the digital oscillator linked to the resonator element
                 update_frequency("resonator", f)
@@ -57,7 +58,7 @@ with client.simulator(QOPVersion(QOP_VER)) as instance:
                     dual_demod.full("minus_sin", "cos", Q),
                 )
                 # Wait for the resonator to deplete
-                wait(depletion_time * u.ns, "resonator")
+                wait(100 * u.ns, "resonator")
                 # Save the 'I' & 'Q' quadratures to their respective streams
                 save(I, I_st)
                 save(Q, Q_st)
