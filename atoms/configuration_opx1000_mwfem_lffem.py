@@ -18,8 +18,8 @@ HOST = "qm-saas.quantum-machines.co"
 EMAIL = "YOUR_EMAIL"
 PWD = "YOUR_PASSWORD"
 
-QOP_IP = "192.168.88.254"
-CLUSTER_NAME = "YaqumoQM"
+QOP_IP = "172.16.33.115"
+CLUSTER_NAME = "CS_3"
 
 
 #######################
@@ -32,10 +32,10 @@ u = unit(coerce_to_integer=True)
 # OPX configuration #
 #####################
 con = "con1"
-lf_fem1 = 1
-lf_fem2 = 2
+lf_fem1 = 3 #1
+lf_fem2 = 5 #2
 lf_fem3 = 3
-mw_fem1 = 4
+mw_fem1 = 1 #4
 
 
 #############
@@ -199,18 +199,18 @@ config = {
                         1: {"offset": 0.0},  # Analog input 1 used for fpga readout
                     },
                 },
-                lf_fem3: {
-                    "type": "LF",
-                    "analog_outputs": {
-                        1: {"offset": 0.0},
-                    },
-                    "digital_outputs": {
-                        1: {},
-                    },
-                    "analog_inputs": {
-                        1: {"offset": 0.0},  # Analog input 1 used for fpga readout
-                    },
-                },
+                # lf_fem3: {
+                #     "type": "LF",
+                #     "analog_outputs": {
+                #         1: {"offset": 0.0},
+                #     },
+                #     "digital_outputs": {
+                #         1: {},
+                #     },
+                #     "analog_inputs": {
+                #         1: {"offset": 0.0},  # Analog input 1 used for fpga readout
+                #     },
+                # },
                 mw_fem1: {
                     # The keyword "band" refers to the following frequency bands:
                     #   1: (50 MHz - 5.5 GHz)

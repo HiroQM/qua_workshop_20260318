@@ -22,6 +22,10 @@ with client.simulator(QOPVersion(QOP_VER)) as instance:
 
     with program() as PROG:
         
+        # ramp_flattop = waveform "ramp up + flattop + ramp down "
+        # play("ramp_flattop", "col1", chirp=([f0, f1, f2, ..., f10], units))
+
+        # play("gaussian", "col_selector_01", duration=500) # clock cycle
         # # case1
         # play("const", "col_selector_01") # 100MHz, 1us
 
@@ -34,8 +38,10 @@ with client.simulator(QOPVersion(QOP_VER)) as instance:
 
         # # case4
         # update_frequency("col_selector_01", 80 * u.MHz)
-        # play("const", "col_selector_01", chirp=(100, "GHz/sec")) # 80MHz -> 100MHz
-
+        # play("gaussian", "col_selector_01", chirp=(100, "GHz/sec")) # 80MHz -> 100MHz
+        play("gaussian1", "col_selector_01", chirp=(100, "GHz/sec"), duration=500) # 80MHz -> 100MHz
+        play("gaussian2", "col_selector_01", chirp=(100, "GHz/sec"), duration=500) # 80MHz -> 100MHz
+        play("gaussian3", "col_selector_01", chirp=(100, "GHz/sec"), duration=500) # 80MHz -> 100MHz    
         # # case5
         # # f01 = 75MHz # QUA variable on FPGA
         # update_frequency("col_selector_01", f01)
@@ -46,15 +52,15 @@ with client.simulator(QOPVersion(QOP_VER)) as instance:
         # # t01 = 500 ns # QUA variable on FPGA
         # update_frequency("col_selector_01", f01)
         # play("const", "col_selector_01", chirp=(100, "GHz/sec"), duration=t01 * u.ns) # f01 MHz -> (f01 + 10)MHz
-        # play("const" * amp(1.0), "col_selector_01", chirp=(50, "GHz/sec")) # f01 MHz -> (f01 + 10)MHz
-        # play("const" * amp(0.9), "col_selector_01", chirp=(60, "GHz/sec")) # f01 MHz -> (f01 + 10)MHz
-        # play("const" * amp(1.0), "col_selector_01", chirp=([100, 105, 110], "GHz/sec"), duration=t01 * u.ns) # f01 MHz -> (f01 + 10)MHz
+        # play("const" * amp(1.2), "col_selector_01", chirp=(50, "GHz/sec")) # f01 MHz -> (f01 + 10)MHz
+        # # play("const" * amp(0.9), "col_selector_01", chirp=(60, "GHz/sec")) # f01 MHz -> (f01 + 10)MHz
+        # # play("const" * amp(1.0), "col_selector_01", chirp=([100, 105, 110], "GHz/sec"), duration=t01 * u.ns) # f01 MHz -> (f01 + 10)MHz
 
-        with infinite_loop_():
-            for i in range(n_tweezers):
-                r = (i + 1) / n_tweezers
-                play("const" * amp(r), f"col_selector_{i + 1:02d}")
-                play("const" * amp(r), f"row_selector_{i + 1:02d}")
+        # with infinite_loop_():
+        #     for i in range(n_tweezers):
+        #         r = (i + 1) / n_tweezers
+        #         play("const" * amp(r), f"col_selector_{i + 1:02d}")
+        #         play("const" * amp(r), f"row_selector_{i + 1:02d}")
 
     #####################################
     #  Open Communication with the QOP  #
